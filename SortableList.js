@@ -3,14 +3,34 @@ import { AComponent } from './AComponent'
  
 class SortableList extends AComponent {
     
-    constructor(Configuration) {
-        super(Configuration);
+    constructor(){
+        super()
+        
+        this.configuration = {
+        
+            model: {},
+            title: '',
+            table: [],
+            defaultOrder: null,
+            selected: null,
+            limit: 10,
+            showControls: true,
+        
+            template: require('./SortableList.html'),
+            bindings : {
+                source: '=',
+                title: '=',
+                limit: '=',
+                showControls: '='
+            }
+        
+        }
+        
     }
     
     initialize(){
 
-        console.log('init');
-        this.configuration.model = this.ApplicationsFactory;
+        // this.configuration.model = this.ApplicationsFactory;
 
         // // Update config parameter se in view
         this.configuration.showControls = this.showControls != undefined ? this.showControls:this.configuration.showControls;

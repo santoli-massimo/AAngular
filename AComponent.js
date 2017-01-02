@@ -2,69 +2,48 @@ require('lodash')
 
 class AComponent {
     
-    directive(){
-    
-        let thiscontroller = this.controller
-        let injectDependency = this.injectDependecy.bind(this)
+    static directive( Configuration ){
+        
+        let self = new this()
         
         return () => {
             
-            var scope = {
-                source  :   '=',
-                title   :   '=',
-                limit   :   '=',
-                showControls : '='
-            }
-            var template = this.configuration.template || require('./SortableList.html')
-            var controller = ( $scope, $injector ) => {
-                
-                // Assign directive attributes to this
-                _.each( _.keys(scope) , key => {
-                    $scope.$watch(key, (val) => this[key] = $scope[key] )
-                });
-                
-                // Assign this to scope
-                $scope.ctrl = this;
-                
-                // Get Injected dependecies
-                let InjectedServices = injectDependency($injector, { $scope })
-                
-                // Call controller and inject dependencies
-                thiscontroller.apply( this, InjectedServices )
-        
-            }
+            var directiveConfig = {
+                scope    : _.get( Configuration, 'bindings') || _.get( self, 'configuration.bindings') || {},
+                template : _.get( Configuration, 'template') || _.get( self, 'configuration.template') || '',
+                controller : ( $scope, $injector ) => {
+                    
+                    // Create new AComponent instance
+                    let self = new this();
+    
+                    // Merge self configuration with configuration provided
+                    if( Configuration )
+                        _.forOwn( Configuration, ( ConfProp, ConfKey ) => { self.configuration[ConfKey] = ConfProp; });
+    
+                    // Assign directive attributes to this
+                    _.each( _.keys(directiveConfig.scope) , key => $scope.$watch(key, (val) => self[key] = $scope[key] ));
+                    
+                    // Assign this to scope
+                    $scope.ctrl = self;
+                    
+                    // Get Injected dependecies
+                    let InjectedServices = self.injectDependecy.apply(self, [ $injector, { $scope } ])
+                    
+                    // Call controller and inject dependencies
+                    self.controller.apply( self, InjectedServices )
+                    
+                }
+            };
             
-            return { scope , template, controller }
+            return directiveConfig
             
         }
         
     }
     
-    controller(){}
-    
-    constructor( Configuration ){
-    
-        this.configuration = {
-            template: '',
-                model: {},
-            title: '',
-                table: [],
-                defaultOrder: null,
-                selected: null,
-                limit: 10,
-                showControls: true
-        };
-        
-        if( Configuration )
-            _.forOwn( Configuration, ( ConfProp, ConfKey ) => { this.configuration[ConfKey] = ConfProp; });
-        
-    }
     
     injectDependecy( $injector, $extra ){
-    
-        // Get angular resources
-        this.injector = $injector
-    
+        
         // Get Controller Paramenter
         let ArgumentsList = this.controller.toString().match(/\((?:.+(?=\s*\))|)/)[0].slice(1).split(/\s*,\s*/g);
         
@@ -79,7 +58,7 @@ class AComponent {
                 _.set( this , param , $extra[param] )
             }
             else{
-                var Service = this.injector.get(param);
+                var Service = $injector.get(param);
                 _.set( this , param , Service )
                 InjectedServices.push(Service)
             }
