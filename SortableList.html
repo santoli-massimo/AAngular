@@ -1,0 +1,72 @@
+<div ng-show="ctrl.configuration.showControls || ctrl.configuration.title" class="row sortable-list-header">
+
+    <div class="col-md-6">
+        <div ng-if="ctrl.configuration.title" >
+            <h1 ng-bind-html="ctrl.configuration.title"></h1>
+        </div>
+    </div>
+
+    <div class="col-md-6 ">
+
+        <div class="col-md-3 margin-top-34 pointer pull-right" style="border-left: solid 1px #ddd" ng-if="ctrl.configuration.showControls">
+            <span class="pull-right" ng-if="ctrl.configuration.limit < ctrl.configuration.model.list.length" ng-click="ctrl.editLimit(ctrl.configuration.model.list.length)">Show All</span>
+            <span class="pull-right" ng-if="ctrl.configuration.limit == ctrl.configuration.model.list.length" ng-click="ctrl.editLimit(10)">Show less</span>
+        </div>
+
+        <div class="custom-search input-group margin-top-28 pull-right">
+            <input ng-model="ctrl.filterSearch" type="text" class="form-control" placeholder="Search..">
+            <div class="input-group-addon"><i class="glyphicon glyphicon-search"></i></div>
+        </div>
+
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <table class="table" ng-click="test()">
+            <thead>
+
+            <!--Create table header-->
+            <th ng-repeat="header in ctrl.configuration.table"  ng-click="ctrl.toggle( header )">
+                {{ header.name }}
+                <span >
+                    <i class="fa fa-caret-up"   ng-show="header.value === false "></i>
+                    <i class="fa fa-caret-down" ng-show="header.value === true "></i>
+                </span>
+            </th>
+
+            </thead>
+
+            <tbody >
+            <!--Create rows-->
+            <tr ng-repeat="
+                    element in ctrl.source
+                    | orderBy: ctrl.itemSortValue(ctrl):ctrl.configuration.selected.value
+                    | filter: ctrl.filterSearch
+                    | limitTo: ctrl.configuration.limit
+            ">
+                <!--Create cells-->
+                <td ng-repeat="field in ctrl.configuration.table ">
+
+                    <!--Display this html before value-->
+                    <span compile-html template="{{ field.prepend }}"  ></span>
+
+                    <!--Dispaly this html instead of value-->
+                    <span compile-html template="{{ field.html }}"  ></span>
+
+                    <!--Diaplay Value-->
+                    <span
+                            ng-if="ctrl.get(element , field.property)  && !field.html">
+                            {{ ctrl.get(element , field.property) }}
+                    </span>
+
+                    <!--Display this hrml after value-->
+                    <span compile-html template="{{ field.append }}"  ></span>
+
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
