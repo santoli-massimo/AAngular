@@ -11,17 +11,35 @@ class AComponent {
             var directiveConfig = {
                 scope    : _.get( Configuration, 'bindings') || _.get( self, 'configuration.bindings') || {},
                 template : _.get( Configuration, 'template') || _.get( self, 'configuration.template') || '',
-                controller : ( $scope, $injector ) => {
+                controller : ( $scope, $injector, $compile ) => {
                     
                     // Create new AComponent instance
                     let self = new this();
+                    self.compile = $compile;
     
                     // Merge self configuration with configuration provided
                     if( Configuration )
                         _.forOwn( Configuration, ( ConfProp, ConfKey ) => { self.configuration[ConfKey] = ConfProp; });
     
                     // Assign directive attributes to this
-                    _.each( _.keys(directiveConfig.scope) , key => $scope.$watch(key, (val) => self[key] = $scope[key] ));
+                    _.each( _.keys(directiveConfig.scope) , key => {
+    
+                            // Watch for new values
+                            $scope.$watch(key, (val) => {
+    
+                                self[key] = ( n => {
+        
+                                    if ($scope[key] != undefined) return $scope[key]
+                                    if (_.get(Configuration, key) != undefined) return _.get(Configuration, key)
+                                    return _.get( self, 'configuration.' + key )
+        
+                                })()
+                                
+                            })
+                        
+                            
+                        }
+                    );
                     
                     // Assign this to scope
                     $scope.ctrl = self;
@@ -40,7 +58,6 @@ class AComponent {
         }
         
     }
-    
     
     injectDependecy( $injector, $extra ){
         

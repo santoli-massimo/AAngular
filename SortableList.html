@@ -48,21 +48,9 @@
                 <!--Create cells-->
                 <td ng-repeat="field in ctrl.configuration.table ">
 
-                    <!--Display this html before value-->
-                    <span compile-html template="{{ field.prepend }}"  ></span>
+                    <span compile-html template="{{ ctrl.templateManager.getTemplate(field) }}"  ></span>
 
-                    <!--Dispaly this html instead of value-->
-                    <span compile-html template="{{ field.html }}"  ></span>
-
-                    <!--Diaplay Value-->
-                    <span
-                            ng-if="ctrl.get(element , field.property)  && !field.html">
-                            {{ ctrl.get(element , field.property) }}
-                    </span>
-
-                    <!--Display this hrml after value-->
-                    <span compile-html template="{{ field.append }}"  ></span>
-
+                    <!--<span ng-bind-template="{{ ctrl.templateManager.getTemplate(field) }}"></span>-->
                 </td>
             </tr>
             </tbody>

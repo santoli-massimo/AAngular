@@ -26,7 +26,10 @@ class SortableList extends AComponent {
         
         }
         
+        this.templateManager = new ListTemplate( this.$scope, this.compile );
+        
     }
+    
     
     initialize(){
 
@@ -99,6 +102,86 @@ class SortableList extends AComponent {
     }
     
 }
+
+class ListTemplate {
+    
+    constructor($scope, $compile){
+        this.$scope = $scope;
+        this.compile = $compile;
+    }
+    
+    compileHtml( html ){
+        return this.compile( html )( this.$scope );
+    }
+    
+    getTemplate(field) {
+        if(field.url)
+            return this.url(field.url);
+        if(field.issue)
+            return this.issues();
+        if(field.array)
+            return this.array();
+        if(field.html)
+            return this.html(field.html);
+        if(field.property)
+            return  this.value();
+        if(field.action)
+            return this.action();
+    }
+    
+    html(html){
+        return `
+        <span>${html}</span>
+        `
+    }
+    
+    url (url) {
+        return `
+        <a ng-href="${url}">
+            <span ng-if="ctrl.get(element , field.property) && !field.icon">{{ ctrl.get(element , field.property) }}</span>
+            <span ng-if="field.icon" class="glyphicon glyphicon-{{ field.icon }}"></span>
+        </a>`;
+    }
+    
+    issues () {
+        return `<span ng-if="ctrl.get(element , field.issue) && ctrl.get(element , field.issue) != ''" class="glyphicon glyphicon-{[{ field.icon }]}"></span>`;
+    }
+    
+    array() {
+        return `
+                <!--<span ng-if="{{ ctrl.get(element , field.property) && ctrl.get(element , field.property).length }}">-->
+                <span>
+                    <span>
+                        <p ng-repeat="item in ctrl.get(element , field.property)">      
+                            <span ng-if="ctrl.get(item, field.array)">{{ ctrl.get(item, field.array) }}</span>
+                        </p>
+                    </span>
+              
+                    <span ng-if="{{ ctrl.get(element , field.property ).length == 0 }}">
+                        --
+                </span>
+				`;
+    }
+    action() {
+        return `<span ng-if="ctrl.isArray(field.action)">
+                    <span ng-repeat="item in field.action track by $index">
+                       <a ng-if="item.linkUrl" href="{[{item.linkUrl + element.id}]}">
+                            <span class="glyphicon glyphicon-{[{ item.icon }]}"></span>      
+                       </a>
+                       <!--- <a ng-if="item.actionUrl" data-toggle="modal" data-target="#confirmModal" ng-click="ctrl.actionURLGenerator(element, item.actionUrl + element.id, item.objectNameProperties, item.actionName)">
+                            <span class="glyphicon glyphicon-{[{ item.icon }]}"></span>
+                       </a> --->
+					   <modal-confirm ng-if="item.actionUrl" object-name="{[{ element.shortName }]}" action-url="{[{item.actionUrl}]}{[{element.id}]}" action-icon="{[{item.icon}]}" action-name="{[{item.actionName}]}"></modal-confirm>
+					</span>
+				</span>`;
+    }
+    
+    value () {
+        return `<span> {{ ctrl.get(element , field.property)}} </span>`;
+    }
+    
+}
+
 
 export { SortableList }
 
