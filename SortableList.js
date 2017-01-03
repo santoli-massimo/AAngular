@@ -70,7 +70,7 @@ class SortableList extends AComponent {
     
     }
     
-    get( obj, property) {
+    get( obj, property ) {
         
         let value = _.get(obj, property);
         
