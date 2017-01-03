@@ -27,9 +27,20 @@ class SortableList extends AComponent {
         }
         
         this.templateManager = new ListTemplate( this.$scope, this.compile );
-        
+    
+    
+    
     }
     
+    controller(){
+    
+        this.test('original')
+    
+    }
+    
+    test( ciao, ApplicationsFactory ){
+        console.log('sortablelist', ciao, ApplicationsFactory);
+    }
     
     initialize(){
 

@@ -15,7 +15,6 @@ class AComponent {
                 
                 // Create new AComponent instance
                 let self = new this();
-                self.compile = $compile;
                 
                 // Merge self configuration with configuration provided
                 if( Configuration = _.cloneDeep(Configuration) )
@@ -38,18 +37,7 @@ class AComponent {
                 // Assign self to scope via alias
                 $scope.ctrl = self;
                 
-                // Inject dependencies
-                _.each( self.getAllMethods(self), ( e, i ) => {
-                        
-                    let InjectedServices = self.injectDependecy.apply( self, [ $injector, { $scope } , self[e] ] )
-                    let thisMethod = self[e];
-
-                    self[e] = ( ...args ) => {
-                        args = _.concat(args, InjectedServices)
-                        return thisMethod.apply( self, args )
-                    }
-
-                });
+                self.injectDependencies( self, $injector, { $scope, $compile, $element } )
    
                 self.controller()
                 
@@ -59,41 +47,77 @@ class AComponent {
         
     }
     
-    getAllMethods(obj) {
+    // Apply dependency injection only to top level object
+    injectDependencies( obj, $injector, $extra) {
+        
+        _( this.getObjectMethods(obj) ).each ( e => {
+            
+            let thisMethod = obj[e]
+            let InjectedServices = obj.getMethodDependecies.apply( obj, [ $injector, $extra , thisMethod ] )
+            
+            obj[e] = ( ...args ) => {
+                args = _.concat(args, InjectedServices)
+                return thisMethod.apply( obj, args )
+            }
+            
+        });
+        
+    }
+    
+    
+    // Apply dependency injection to all the prototype chain
+    injectDependenciesDeep( obj, $injector, $extra ){
+
+        var iter = obj
+
+        // Cicle trough prototype chain
+        while ( (iter instanceof AComponent) && ( Object.getPrototypeOf(iter) instanceof AComponent) && ( iter = Object.getPrototypeOf(iter) ) )
+        {
+
+            let properties = _.filter( Object.getOwnPropertyNames(iter),  e => typeof _.get(iter, e) == 'function' )
+
+            _(properties).each ( e => {
+
+                let thisObject = iter
+                let thisMethod = iter[e]
+                let InjectedServices = this.getMethodDependecies.apply( this, [ $injector, $extra , thisMethod ] )
+
+                iter[e] = ( ...args ) => {
+                    args = _.concat(args, InjectedServices)
+                    return thisMethod.apply( thisObject, args )
+                }
+
+            });
+
+        }
+
+    }
+    
+    getObjectMethods(obj) {
         
         var props = [];
         var iter = obj
         
-        // do {
-        //     props = props.concat(Object.getOwnPropertyNames(iter));
-        // } while ( (iter instanceof AComponent) && ( iter = Object.getPrototypeOf(iter) ) );
+        // Cicle trough prototype chain
         while ( (iter instanceof AComponent) && ( Object.getPrototypeOf(iter) instanceof AComponent) && ( iter = Object.getPrototypeOf(iter) ) )
             props = props.concat(Object.getOwnPropertyNames(iter));
         
         // return props
         return _.filter( props, ( e , i) => { return  typeof _.get(obj, e) == 'function'} )
-
         
     }
     
-    getAllMethodParams( method ){
-    
-        return method.toString().match(/\((?:.+(?=\s*\))|)/)[0].slice(1).split(/\s*,\s*/g);
-        
-    }
-    
-    injectDependecy( $injector, $extra , $sourceMethod ){
+    getMethodDependecies( $injector, $extra , $sourceMethod ){
         
         // Get Controller Paramenter
-        let ArgumentsList = this.getAllMethodParams( $sourceMethod )
+        let ArgumentsList = this.getMethodParams( $sourceMethod )
         
         // Inject Dependencies
         let InjectedServices = []
-        
-        try {
     
-            _(ArgumentsList).each(param => {
-        
+        _(ArgumentsList).each(param => {
+    
+            try {
                 if (param && $extra.hasOwnProperty(param)) {
                     InjectedServices.push($extra[param])
                     // if( ! _.get(this, param)  ) _.set( this , param , $extra[param] )
@@ -104,15 +128,19 @@ class AComponent {
                     if (!_.get(InjectedServices, Service)) InjectedServices.push(Service)
                 }
         
-            });
-        }
-        catch( e ){
-            // console.log( e );
-        }
+            }
+            catch( e ){
+                // console.log( e );
+            }
+        
+        });
+        
         
         return InjectedServices
         
     }
+    
+    getMethodParams( method ){ return method.toString().match(/\((?:.+(?=\s*\))|)/)[0].slice(1).split(/\s*,\s*/g); }
     
 }
 
