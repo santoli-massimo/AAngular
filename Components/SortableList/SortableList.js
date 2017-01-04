@@ -1,5 +1,5 @@
 require('lodash');
-import { AComponent } from './AComponent'
+import { AComponent } from '../../Classes/AComponent'
  
 class SortableList extends AComponent {
     
@@ -27,9 +27,7 @@ class SortableList extends AComponent {
         }
         
         this.templateManager = new ListTemplate( this.$scope, this.compile );
-    
-    
-    
+        
     }
     
     controller(){

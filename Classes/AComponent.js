@@ -37,7 +37,8 @@ class AComponent {
                 // Assign self to scope via alias
                 $scope.ctrl = self;
                 
-                self.injectDependencies( self, $injector, { $scope, $compile, $element } )
+                // self.injectDependencies( self, $injector, { $scope, $compile, $element } )
+                self.injectDependenciesDeep( self, $injector, { $scope, $compile, $element } )
    
                 self.controller()
                 
@@ -63,7 +64,6 @@ class AComponent {
         });
         
     }
-    
     
     // Apply dependency injection to all the prototype chain
     injectDependenciesDeep( obj, $injector, $extra ){
