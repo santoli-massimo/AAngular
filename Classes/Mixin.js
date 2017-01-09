@@ -1,5 +1,5 @@
 import 'lodash'
-import { ClassHelper } from './ClassHelper'
+import { ClassHelper } from '../Helpers/ClassHelper'
 
 class Mixin {
     

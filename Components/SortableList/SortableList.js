@@ -1,6 +1,6 @@
 require('lodash');
 import { AComponent } from '../../Classes/AComponent'
- 
+
 class SortableList extends AComponent {
     
     constructor(){
@@ -31,6 +31,7 @@ class SortableList extends AComponent {
     }
     
     controller(){
+        this.level = 'sortable'
     
         this.test('original')
     
@@ -40,14 +41,17 @@ class SortableList extends AComponent {
         console.log('sortablelist', ciao, ApplicationsFactory);
     }
     
+    SortableList( ciao, ApplicationsFactory ){
+    }
+    
     initialize(){
 
         // this.configuration.model = this.ApplicationsFactory;
 
         // // Update config parameter se in view
-        this.configuration.showControls = this.showControls != undefined ? this.showControls:this.configuration.showControls;
-        this.configuration.title = this.title != undefined ? this.title : this.configuration.title ;
-        this.configuration.limit = this.limit != undefined ? this.limit : this.configuration.limit ;
+        this.configuration.showControls = this.showControls !== undefined ? this.showControls:this.configuration.showControls;
+        this.configuration.title = this.title !== undefined ? this.title : this.configuration.title ;
+        this.configuration.limit = this.limit !== undefined ? this.limit : this.configuration.limit ;
 
         // handle filter preset on page load
         if( ! this.configuration.selected ) {
@@ -58,11 +62,13 @@ class SortableList extends AComponent {
     
     toggle (element) {
         
+        console.log('toggle', this);
+        
         // Iterate table to find clicked column
         _.each( this.configuration.table , (header, header_key) => {
             
             // Check if this is the clicked column
-            var isClickedHeader = angular.equals( header, element );
+            let isClickedHeader = angular.equals(header, element);
             
             // Order by clicked column
             if(isClickedHeader){
@@ -79,18 +85,18 @@ class SortableList extends AComponent {
     
     }
     
-    get( obj, property ) {
+    get( obj, property , $ubiModal) {
         
         let value = _.get(obj, property);
-        
+        // console.log('get', $ubiModal);
+    
         if(isNaN(value))
             return _.trim( value );
         
         return parseInt( value ) || '';
     
-    
     }
-
+ 
     editLimit(limit) {
         this.configuration.limit = limit;
     }
@@ -184,7 +190,6 @@ class ListTemplate {
 					</span>
 				</span>`;
     }
-    
     value () {
         return `<span> {{ ctrl.get(element , field.property)}} </span>`;
     }

@@ -14,19 +14,19 @@ class ClassHelper {
         let propertyNames = Object.getOwnPropertyNames( Target )
         
         // Return methods
-        return _.filter( propertyNames, ( e , i) => { return  typeof _.get(Target, e) == 'function'} )
+        return _.filter( propertyNames, ( e , i) => { return  typeof _.get(Target, e) === 'function'} )
         
     }
     
     /**
      *
-     * @param topClass : Class|Instance
-     * @param bottomClass : Class
-     * @returns {Array<String>}
+     * @param topClass : Object
+     * @param bottomClass : Object
+     * @returns {Array}
      */
     static getOwnMethodsNamesDeep ( topClass, bottomClass ){
         
-        var methods = [];
+        let methods = [];
     
         // Cicle trough prototype chain
         while ( (topClass instanceof bottomClass) && ( Object.getPrototypeOf(topClass) instanceof bottomClass) && ( topClass = Object.getPrototypeOf(topClass) ) )
@@ -46,7 +46,7 @@ class ClassHelper {
 
         // @TODO : tested only with babel, need to check if works on pure es6 environment
         return typeof Target === 'function' &&
-            ( /^(?:class|function (?:[A-Z]|_class))/.test(Target) || Object.getOwnPropertyDescriptor(Target, 'prototype').writable == false )
+            ( /^(?:class|function (?:[A-Z]|_class))/.test(Target) || Object.getOwnPropertyDescriptor(Target, 'prototype').writable === false )
  
     }
     

@@ -3,14 +3,10 @@ require('lodash')
 class AComponent {
     
     static directive( Configuration ){
-        
-        let self = new this()
-        
+
         return () => ({
             
-            scope    : _.get( Configuration, 'bindings') || _.get( self, 'configuration.bindings') || {},
-            template : _.get( Configuration, 'template') || _.get( self, 'configuration.template') || '',
-            
+            scope    : _.get( Configuration, 'bindings') || _.get( new this(), 'configuration.bindings') || {},
             controller : ( $scope, $element , $attrs, $transclude, $injector, $compile ) => {
                 
                 // Create new AComponent instance
@@ -25,8 +21,8 @@ class AComponent {
     
                         self[key] = ( n => {
         
-                            if ( $scope[key] != undefined ) return $scope[key]
-                            if ( _.get(Configuration, key) != undefined) return _.get(Configuration, key)
+                            if ( $scope[key] !== undefined ) return $scope[key]
+                            if ( _.get(Configuration, key) !== undefined) return _.get(Configuration, key)
                             return _.get( self, 'configuration.' + key )
         
                         })()
@@ -37,14 +33,33 @@ class AComponent {
                 // Assign self to scope via alias
                 $scope.ctrl = self;
                 
-                // self.injectDependencies( self, $injector, { $scope, $compile, $element } )
+                
+                self.injectDependencies( self, $injector, { $scope, $compile, $element } )
+                // Add dependecy injection to object methods
+                // self.injectDependenciesDeep( self, $injector, { $scope, $compile, $element } )
                 self.injectDependenciesDeep( self, $injector, { $scope, $compile, $element } )
    
+                // Render template
+                self.render( $scope, $compile, $element , _.get( Configuration, 'template') || _.get( self, 'configuration.template') )
+                
+                // Execute controller
                 self.controller()
                 
             }
                 
         })
+        
+    }
+
+    
+    render( $scope, $compile, $element, template) {
+        
+        // Set template
+        template = template || $element.html()
+        // Clear element
+        $element.html("");
+        // Append rendered html
+        $element.append( $compile( template )( $scope ) );
         
     }
     
@@ -68,19 +83,18 @@ class AComponent {
     // Apply dependency injection to all the prototype chain
     injectDependenciesDeep( obj, $injector, $extra ){
 
-        var iter = obj
-
+        var iter = Object.getPrototypeOf(obj)
+        
         // Cicle trough prototype chain
-        while ( (iter instanceof AComponent) && ( Object.getPrototypeOf(iter) instanceof AComponent) && ( iter = Object.getPrototypeOf(iter) ) )
+        do
         {
-
-            let properties = _.filter( Object.getOwnPropertyNames(iter),  e => typeof _.get(iter, e) == 'function' )
-
+            let properties = _.filter( Object.getOwnPropertyNames( iter ),  e => typeof _.get( iter, e ) === 'function' )
+            
             _(properties).each ( e => {
 
                 let thisObject = iter
                 let thisMethod = iter[e]
-                let InjectedServices = this.getMethodDependecies.apply( this, [ $injector, $extra , thisMethod ] )
+                let InjectedServices = this.getMethodDependecies.apply( iter, [ $injector, $extra , thisMethod ] )
 
                 iter[e] = ( ...args ) => {
                     args = _.concat(args, InjectedServices)
@@ -88,8 +102,9 @@ class AComponent {
                 }
 
             });
-
+            
         }
+        while ( (iter instanceof AComponent) && ( Object.getPrototypeOf(iter) instanceof AComponent) && ( iter = Object.getPrototypeOf(iter) ) )
 
     }
     
@@ -103,7 +118,7 @@ class AComponent {
             props = props.concat(Object.getOwnPropertyNames(iter));
         
         // return props
-        return _.filter( props, ( e , i) => { return  typeof _.get(obj, e) == 'function'} )
+        return _.filter( props, ( e , i) => { return  typeof _.get(obj, e) === 'function'} )
         
     }
     
