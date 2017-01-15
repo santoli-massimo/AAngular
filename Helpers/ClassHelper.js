@@ -1,20 +1,22 @@
 class ClassHelper {
     
+    static restricted = [ 'caller' , 'arguments' ]
+    
     /**
      *
      * @returns {Array<String>}
      * @param Target :Class
      */
     static getOwnMethodsNames( Target ) {
-
-        // Distinguish between Class and Instance
-        Target = ClassHelper.isClass(Target) ? Target.prototype : Object.getPrototypeOf(Target)
     
-        // Get Property names
-        let propertyNames = Object.getOwnPropertyNames( Target )
+        // Distinguish between Class and Instance
+        Target = ClassHelper.isClass(Target) ? Object.getPrototypeOf( new Target() ) : Object.getPrototypeOf(Target)
         
-        // Return methods
-        return _.filter( propertyNames, ( e , i) => { return  typeof _.get(Target, e) === 'function'} )
+        // Get Object property names removing function restricted property
+        let propertyNames = _.filter( Object.getOwnPropertyNames( Target ), name => _.indexOf(ClassHelper.restricted, name) === -1 )
+        
+        // Return list containing object method names
+        return _.filter( propertyNames, ( e , i) => { return typeof _.get(Target, e) === 'function'} )
         
     }
     
@@ -43,11 +45,26 @@ class ClassHelper {
      * @returns {boolean}
      */
     static isClass( Target ) {
-
+        
         // @TODO : tested only with babel, need to check if works on pure es6 environment
-        return typeof Target === 'function' &&
-            ( /^(?:class|function (?:[A-Z]|_class))/.test(Target) || Object.getOwnPropertyDescriptor(Target, 'prototype').writable === false )
+        return typeof Target === 'function'
+            && ( /_classCallCheck/.test(Target.toString()) || Object.getOwnPropertyDescriptor(Target, 'prototype').writable === false )
  
+    }
+    
+    /**
+     *
+     * @param Target
+     * @returns {Array|{index: number, input: string}}
+     */
+    static getClassName ( Target ) {
+        
+        // Instance
+        if( typeof Target !== 'function' ) return Target.constructor.name
+        
+        // Class Definition
+        return Target.name || /^function\s+([\w\$]+)\s*\(/.exec( Target.toString() ) || /^function\s+([\w\$]+)\s*\(/.exec( Target.toString() )
+        
     }
     
     

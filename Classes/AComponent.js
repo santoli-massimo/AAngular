@@ -150,7 +150,6 @@ class AComponent {
         
         });
         
-        
         return InjectedServices
         
     }
