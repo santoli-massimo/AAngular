@@ -2,6 +2,7 @@
 
   "name": "AAngular",
   "author": "Santoli Massimo",
+  "version": "0.1",
   "dependecyes" : {
     "babel-core": "^6.18.2",
     "babel-loader": "^6.2.8",
