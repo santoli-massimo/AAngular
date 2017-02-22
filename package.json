@@ -1,5 +1,7 @@
 {
 
+  "name": "AAngular",
+  "author": "Santoli Massimo",
   "dependecyes" : {
     "babel-core": "^6.18.2",
     "babel-loader": "^6.2.8",
